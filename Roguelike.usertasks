@@ -1,0 +1,18 @@
+<ListOfTask>
+  <Task file="" description="How spawn enemies and items w/ random number" completed="True" />
+  <Task file="" description="How place items and enemies in random positions?  - need check walls and other board items" completed="True" />
+  <Task file="" description="pick up items (remove from level[,] AND screen), then move to spot" priority="High" completed="True" />
+  <Task file="" description="inventory data" completed="True" />
+  <Task file="" description="use items in inventory" completed="True" />
+  <Task file="" description="inventory GUI" priority="Low" />
+  <Task file="" description="Tell level items position (see how spawn enemies/items)" priority="High" completed="True" />
+  <Task file="" description="Walls - how check walls from loaded level?" />
+  <Task file="" description="Enemies - exchange damage, death" completed="True" />
+  <Task file="" description="Enemy and Item variety (prefabs)" priority="High" completed="True" />
+  <Task file="" description="Enemies follow player when in radius" completed="True" />
+  <Task file="" description="Combat Log and player info classes. extends monobehaviour to use onGUI?" priority="High" completed="True" />
+  <Task file="" description="inventory gui just use ongui to output to corner of screen" completed="True" />
+  <Task file="" description="Fix randomized prefabs. May need to use Unity's Random class." completed="True" />
+  <Task file="" description="unique enemy and item icons" />
+  <Task file="" description="camera over player - follow, rather than whole level." />
+</ListOfTask>
