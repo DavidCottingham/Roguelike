@@ -3,7 +3,7 @@ using System.Collections;
 
 public class EnemyScript : MonoBehaviour {
 
-	//Any need for EnemyType? Only used as "backup" name, currently ><
+	//FIXME Any need for EnemyType? Only used as "backup" name, currently ><
 	public enum EnemyType {Rat, Goblin, Skeleton, Ogre}
 	//TODO complete enum enemytype
 

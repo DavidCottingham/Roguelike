@@ -41,7 +41,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemClass: 1
   mainStat: 2
-  itemName: Steel Chest Armor
+  itemName: Steel Helmet
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1

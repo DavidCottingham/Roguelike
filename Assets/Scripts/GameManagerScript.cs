@@ -169,13 +169,19 @@ public class GameManagerScript : MonoBehaviour {
 				//FUTURE change so that move player checks a boolean or something, rather than using return. this way, don't have to remember to call check radius here too
 				CheckRadiusAroundPlayer(); //allow others to move and attack
 				return; //don't move to space
-			} else DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, e.ToString() + " died");
+			} else {
+				level[(int) boardPiece.MapPosition.x, (int) boardPiece.MapPosition.y] = null;
+				DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, e.ToString() + " died");
+				//FUTURE change so that move player checks a boolean or something, rather than using return. this way, don't have to remember to call check radius here too
+				CheckRadiusAroundPlayer(); //allow others to move and attack
+			}
 		}
 
 		//ITEM Check
 		//if space has item, pick up item
 		else if (boardPiece != null && boardPiece.GetType() == typeof(Item)) {
 			player.PickUpItem((Item) boardPiece);
+			level[(int) boardPiece.MapPosition.x, (int) boardPiece.MapPosition.y] = null;
 		}
 
 		//MOVE Player to (now) empty space
@@ -184,7 +190,6 @@ public class GameManagerScript : MonoBehaviour {
 		CheckRadiusAroundPlayer();
 	}
 
-	//TODO finish check radius around player
 	void CheckRadiusAroundPlayer() {		
 		int h = (int) player.MapPosition.x;
 		int v = (int) player.MapPosition.y;
@@ -225,47 +230,18 @@ public class GameManagerScript : MonoBehaviour {
 			if (Mathf.Abs(diffH) > Mathf.Abs(diffV)) {
 				//further horizontally - move that direction
 				//diffH can't be 0 AND closer than diffV, so don't worry about that check
-				if (diffH < 0) { //if diffH is negative, enemy is left of player; move right/East
-					MovePiece(Directions.East, e);
-					//print("Moving from " + enemyH + ", " + enemyV + " East");
-				} else { //if diffH is positive, enemy is right of player; move left/West
-					MovePiece(Directions.West, e);
-					//print("Moving from " + enemyH + ", " + enemyV + " West");
-				}
+				EnemyMoveHorizontal(diffH, e);
 			} else if (Mathf.Abs(diffV) > Mathf.Abs(diffH)) {
 				//further vertically - move that direction
-				if (diffV < 0) { //if diffV is negative, enemy is below player; move up/North
-					MovePiece(Directions.North, e);
-					//print("Moving from " + enemyH + ", " + enemyV + " North");
-				} else { //if diffV is positive, enemy is above player; move down/South
-					MovePiece(Directions.South, e);
-					//print("Moving from " + enemyH + ", " + enemyV + " South");
-				}
+				EnemyMoveVertical(diffV, e);
 			} else {
 				//if diffs are same, randomly choose north/south (diffH) or East/West (diffV)
 				int axis = Random.Range(0, 2);
-				switch (axis) {
-				case 0: //horizontal
-					//print("Chose Horizontal");
-					if (diffH < 0) { //if diffH is negative, enemy is left of player; move right/East
-						MovePiece(Directions.East, e);
-						//print("Moving from " + enemyH + ", " + enemyV + " East");
-					} else { //if diffH is positive, enemy is right of player; move left/West
-						MovePiece(Directions.West, e);
-						//print("Moving from " + enemyH + ", " + enemyV + " West");
-					}
-					break;
-				case 1: //vertical
-					//print("Chose Vertical");
-					if (diffV < 0) { //if diffV is negative, enemy is below player; move up/North
-						MovePiece(Directions.North, e);
-						//print("Moving from " + enemyH + ", " + enemyV + " North");
-					} else { //if diffV is positive, enemy is above player; move down/South
-						MovePiece(Directions.South, e);
-						//print("Moving from " + enemyH + ", " + enemyV + " South");
-					}
-					break;
-				}
+				if (axis == 0) { //arbitrarily chosen to be horizontal
+					if (!EnemyMoveHorizontal(diffH, e)); //try horizontal first. if could not move ...
+					else { EnemyMoveVertical(diffV, e); } // ...try the vertical
+				} else if (!EnemyMoveVertical(diffV, e)); //try vertical first. if not ...
+				else EnemyMoveHorizontal(diffH, e); // ... try horizontal
 			}
 		}
 
@@ -286,35 +262,60 @@ public class GameManagerScript : MonoBehaviour {
 		}
 	}
 
-	void MovePiece(Directions dir, BoardPieceObject piece) {
+	bool EnemyMoveHorizontal(int check, Enemy e) {
+		if (check < 0) { //if diffH is negative, enemy is left of player; move right/East
+			//print("Moving from " + enemyH + ", " + enemyV + " East");
+			return MovePiece(Directions.East, e);
+		} else { //if diffH is positive, enemy is right of player; move left/West
+			//print("Moving from " + enemyH + ", " + enemyV + " West");
+			return MovePiece(Directions.West, e);
+		}
+	}
+
+	bool EnemyMoveVertical(int check, Enemy e) {
+		if (check < 0) { //if diffV is negative, enemy is below player; move up/North
+			//print("Moving from " + enemyH + ", " + enemyV + " North");
+			return MovePiece(Directions.North, e);
+		} else { //if diffV is positive, enemy is above player; move down/South
+			//print("Moving from " + enemyH + ", " + enemyV + " South");
+			return MovePiece(Directions.South, e);
+		}
+	}
+
+	bool MovePiece(Directions dir, BoardPieceObject piece) {
 		int h = (int) piece.MapPosition.x;
 		int v = (int) piece.MapPosition.y;
 		switch (dir) {
 		case Directions.North:
-			if (v + 1 >= height) { return; }
+			if (v + 1 >= height) { return false; } //if attempted space out of bounds, abort move attempt
+			if (level[h, v + 1] != null) { return false; } //if space occupied, abort move attempt
 			level[h, v + 1] = piece;
 			break;
 		case Directions.East:
-			if (h + 1 >= width) { return; }
+			if (h + 1 >= width) { return false; } //if attempted space out of bounds, abort move attempt
+			if (level[h + 1, v] != null) { return false; } //if space occupied, abort move attempt
 			level[h + 1, v] = piece;
 			break;
 		case Directions.South:
-			if (v - 1 < 0) { return; }
+			if (v - 1 < 0) { return false; } //if attempted space out of bounds, abort move attempt
+			if (level[h, v - 1] != null) { return false; } //if space occupied, abort move attempt
 			level[h, v - 1] = piece;
 			break;
 		case Directions.West:
-			if (h - 1 < 0) { return; }
+			if (h - 1 < 0) { return false; } //if attempted space out of bounds, abort move attempt
+			if (level[h - 1, v] != null) { return false; } //if space occupied, abort move attempt
 			level[h - 1, v] = piece;
 			break;
 		}
 		level[h, v] = null;
 		piece.Move(dir);
+		return true;
 	}
 
 	void PlayerDied() {
 		//TODO end level properly: death screen
 		DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, "You have died!");
-		NextLevel();
+		//NextLevel();
 	}
 
 	void QueryPositions() {

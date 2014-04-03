@@ -41,7 +41,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemClass: 0
   mainStat: 1
-  itemName: 
+  itemName: GenericMelee
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1

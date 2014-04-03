@@ -42,7 +42,7 @@ MonoBehaviour:
   damage: 1
   health: 2
   enemyType: 0
-  enemyName: 
+  enemyName: GenericRat
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1
