@@ -1,10 +1,12 @@
 # Unity
 Library/
+Temp/
 
 # MonoDevelop (?) Doubtful need to share these
 *.sln
 *.userprefs
 *.usertasks
+*.csproj
 
 #################
 ## Visual Studio
@@ -35,7 +37,7 @@ build/
 *_p.c
 *.ilk
 #*.meta
-*.obj
+#*.obj
 *.pch
 *.pdb
 *.pgc
