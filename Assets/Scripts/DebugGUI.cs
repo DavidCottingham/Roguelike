@@ -2,12 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Helper class to display and log Debug output to the screen. Use <see cref="Message()"/>or <see cref="Log()"/>to display or log a message.
+/// </summary>
 public class DebugGUI : MonoBehaviour {
 
-	//FUTURE moce back to yOffset between lines (instead of going off messageHeight) so they can be closer together.
-
+	//FUTURE move back to yOffset between lines (instead of going off messageHeight) so they can be closer together.
+	///<summary>
+	/// The target output area or log for the message you are sending
+	/// </summary>
 	public enum Sides { LEFT, RIGHT };
 
+	///<summary>
+	/// Coupling struct for the message and its corresponding side's area/log to be displayed on.
+	/// </summary>
 	private struct DebugMessage {
 		public Sides side;
 		public string message;
@@ -31,15 +39,31 @@ public class DebugGUI : MonoBehaviour {
         StartCoroutine(ClearMessages());
     }
 
+	/// <summary>
+	/// Output the message to the default location of top left corner.
+	/// </summary>
+	/// <seealso cref="Message(side, msgText)"/>
+	/// <param name="msgText">Message text to be displayed.</param>
     public static void Message(string msgText) {
 		Message(Sides.LEFT, msgText);
     }
 
+	/// <summary>
+	/// Output the message to the specified side of the top half of the screen.
+	/// </summary>
+	/// <param name="side">Output side.</param>
+	/// <param name="msgText">Message text to be displayed.</param>
 	public static void Message(Sides side, string msgText) {
 		messageList.Add(new DebugMessage(side, msgText));
 	}
 
-	public static void AddToMessageLog(Sides side, string msgText) {
+	/// <summary>
+	/// Log the message to the specified log / side.
+	/// </summary>
+	/// <seealso cref="Log(side, msgText, maxMsgCount)"/>
+	/// <param name="side">Log Side.</param>
+	/// <param name="msgText">Message text to be logged.</param>
+	public static void Log(Sides side, string msgText) {
 		if (side == Sides.RIGHT) {
 			if (bottomRightMsgLog.Count < maxMsgCountRight) {
 				bottomRightMsgLog.Enqueue(new DebugMessage(side, msgText));
@@ -61,19 +85,25 @@ public class DebugGUI : MonoBehaviour {
 		}
 	}
 
-	public static void AddToMessageLog(Sides side, string msgText, int maxMsgCount) {
+	/// <summary>
+	/// Log the message to the specified log / side and set the log max-length to the specified number.
+	/// </summary>
+	/// <param name="side">Log Side.</param>
+	/// <param name="msgText">Message text to be logged.</param>
+	/// <param name="maxLogLength">Max length of the log.</param>
+	public static void Log(Sides side, string msgText, int maxLogLength) {
 		if (side == Sides.RIGHT) {
-			maxMsgCountRight = maxMsgCount;
+			maxMsgCountRight = maxLogLength;
 		} else {
-			maxMsgCountLeft = maxMsgCount;
+			maxMsgCountLeft = maxLogLength;
 		}
-		AddToMessageLog(side, msgText);
+		Log(side, msgText);
 	}
 
     void OnGUI() {
         if (messageList != null && messageList.Count > 0) {
-			int loopCount_TR = 0;
-			int loopCount_TL = 0;
+			int loopCount_TR = 0; //top right output's count
+			int loopCount_TL = 0; //top left output's count
 			Rect area = new Rect();
 			foreach(DebugMessage msg in messageList) {
 				if (msg.side == Sides.LEFT) {

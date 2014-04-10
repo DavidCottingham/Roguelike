@@ -57,7 +57,6 @@ public class Enemy : BoardPieceObject {
 	}
 
 	public override string ToString() {
-		if (es.enemyName != "")	return es.enemyName;
-		else return es.enemyType.ToString();
+		return es.enemyName;
 	}
 }

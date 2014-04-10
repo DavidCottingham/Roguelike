@@ -7,7 +7,13 @@ public enum Directions {North, East, South, West}
 
 public class GameManagerScript : MonoBehaviour {
 
-	public GameObject wall; //assigned in inspector
+	private static PauseScript ps;
+	private static bool paused = false;
+	public static bool Paused {
+		get { return paused; } }
+
+	public GameObject wallPrefab; //assigned in inspector
+	public GameObject wallsParent;
 
 	public static float translateUnits = 2f;
 	private int width = 50;
@@ -22,68 +28,62 @@ public class GameManagerScript : MonoBehaviour {
 	private int playerRadius = 2;
 
 	void Start() {
+		SetUpLevel();
+		ps = GetComponent<PauseScript>() as PauseScript;
+	}
+
+	void SetUpLevel() {
 		level = new BoardPieceObject[width, height];
 
-		//FUTURE don't make new player. persist it (use factory) so player keeps inventory and health
-		player = new Player(new Vector2(6, 3)); //TEMP spawn Position
-		level[6,3] = player;
-
-		//WALL perimeter
-		//add walls at 1- mins and 1+ maxes. add corners
-		//FUTURE nest walls in GO
-		for (int i = 0; i <= width; ++i) {
-			Vector3 pos = new Vector3(i * translateUnits, -1 * translateUnits);
-			Instantiate(wall, pos, Quaternion.identity);
-			pos = new Vector3(i * translateUnits, height * translateUnits);
-			Instantiate(wall, pos, Quaternion.identity);
-		}
-		for (int i = 0; i <= height; ++i) {
-			Vector3 pos = new Vector3(-1 * translateUnits, i * translateUnits);
-			Instantiate(wall, pos, Quaternion.identity);
-			pos = new Vector3(width * translateUnits, i * translateUnits);
-			Instantiate(wall, pos, Quaternion.identity);
-		}
-		//4 corners
-		//FUTURE check if can do corners in loop
-		Instantiate(wall, new Vector3(-1 * translateUnits, -1 * translateUnits), Quaternion.identity);
-		Instantiate(wall, new Vector3(-1 * translateUnits, height * translateUnits), Quaternion.identity);
-		Instantiate(wall, new Vector3(width * translateUnits, -1 * translateUnits), Quaternion.identity);
-		Instantiate(wall, new Vector3(width * translateUnits, height * translateUnits), Quaternion.identity);
+		PopulateLevel<Player>(1);
+		player = Player.player;
 		
-		int spwnH = 0;
-		int spwnV = 0;
-		while (true) {
-			spwnH = Random.Range(0, width);
-			spwnV = Random.Range(0, height);
-			if (level[spwnH, spwnV] == null) { break; }
+		//WALL perimeter
+		//loop from -1 to max to adds corners
+		//each loop creates walls on both sides at same time as move up to max
+		GameObject tempWall;
+		Vector3 pos;
+		for (int i = -1; i <= width; ++i) {
+			pos = new Vector3(i * translateUnits, -1 * translateUnits);
+			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
+			if (wallsParent == null) print("poop");
+			tempWall.transform.parent = wallsParent.transform;
+			pos = new Vector3(i * translateUnits, height * translateUnits);
+			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
+			tempWall.transform.parent = wallsParent.transform;
 		}
-		level[spwnH, spwnV] = new ExitPiece(spwnH, spwnV);
+		for (int i = -1; i <= height; ++i) {
+			pos = new Vector3(-1 * translateUnits, i * translateUnits);
+			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
+			tempWall.transform.parent = wallsParent.transform;
+			pos = new Vector3(width * translateUnits, i * translateUnits);
+			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
+			tempWall.transform.parent = wallsParent.transform;
+		}
 
-		//SPAWN ENEMIES in random positions
-		for (int i = 0; i < numEnemies; ++i) {
-			//emptySpace = false;
+		PopulateLevel<ExitPiece>(1);
+		PopulateLevel<Enemy>(numEnemies);
+		PopulateLevel<Item>(numItems);
+	}
+
+	void PopulateLevel<T>(int count) where T: BoardPieceObject {
+		int spwnH, spwnV = 0;
+		for (int i = 0; i < count; ++i) {
 			spwnH = 0;
 			spwnV = 0;
 			while (true) {
 				spwnH = Random.Range(0, width);
 				spwnV = Random.Range(0, height);
-				//TODO empty Space check to own method so can use for enemy movement too
 				if (level[spwnH, spwnV] == null) { break; }
 			}
-			level[spwnH, spwnV] = new Enemy(spwnH, spwnV);
-		}
-
-		//SPAWN ITEMS in random positions
-		for (int i = 0; i < numItems; ++i) {
-			//emptySpace = false;
-			spwnH = 0;
-			spwnV = 0;
-			while (true) {
-				spwnH = Random.Range(0, width);
-				spwnV = Random.Range(0, height);
-				if (level[spwnH, spwnV] == null) { break; }
+			if (typeof(T) == typeof(Player) && Player.player != null) {
+				player = Player.player;
+				player.SetStartPos(spwnH, spwnV);
+				level[spwnH, spwnV] = player;
+			} else {
+				System.Object[] args = new System.Object[] { spwnH, spwnV };
+				level[spwnH, spwnV] = (T) System.Activator.CreateInstance(typeof(T), args); //Reflection to dynamically instantiate board pieces
 			}
-			level[spwnH, spwnV] = new Item(spwnH, spwnV);
 		}
 	}
 
@@ -92,23 +92,30 @@ public class GameManagerScript : MonoBehaviour {
 		player.PlayerStats();
 		//DebugGUI.Message(PrintLevel());
 
-		if (Input.GetButtonDown("Right")) {
-			PlayerMove(Directions.East);
-		} else if (Input.GetButtonDown("Left")) {
-			PlayerMove(Directions.West);
-		} else if (Input.GetButtonDown("Up")) {
-			PlayerMove(Directions.North);
-		} else if (Input.GetButtonDown("Down")) {
-			PlayerMove(Directions.South);
+		if (!Paused) {
+			if (Input.GetButtonDown("Right")) {
+				PlayerMove(Directions.East);
+			} else if (Input.GetButtonDown("Left")) {
+				PlayerMove(Directions.West);
+			} else if (Input.GetButtonDown("Up")) {
+				PlayerMove(Directions.North);
+			} else if (Input.GetButtonDown("Down")) {
+				PlayerMove(Directions.South);
+			}
+
+			//DEBUG
+			if (Input.GetKeyDown(KeyCode.I)) {
+				player.ListInv();
+			} else if (Input.GetKeyDown(KeyCode.U)) {
+				player.PrintStats();
+			} else if (Input.GetKeyDown(KeyCode.O)) {
+				QueryPositions();
+			}
 		}
 
-		//TEMP
-		if (Input.GetKeyDown(KeyCode.I)) {
-			player.ListInv();
-		} else if (Input.GetKeyDown(KeyCode.U)) {
-			player.PrintStats();
-		} else if (Input.GetKeyDown(KeyCode.O)) {
-			QueryPositions();
+		if (Input.GetKeyDown("escape")) {
+			if (!paused) PauseGame();
+			else UnpauseGame();
 		}
 	}
 
@@ -164,16 +171,13 @@ public class GameManagerScript : MonoBehaviour {
 			//enemy attacks handled in radius check. can't have enemy attack in both or it would attack player twice. removed from here so don't have to keep track of which the player attacked
 			//player do damage first; enemy take damage
 			bool enemyDeath = e.TakeDamage(player.Damage);
-			DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, "You attacked " + e.ToString() + " for " + player.Damage + " damage");
+			DebugGUI.Log(DebugGUI.Sides.LEFT, "You attacked " + e.ToString() + " for " + player.Damage + " damage");
 			if (!enemyDeath) {
-				//FUTURE change so that move player checks a boolean or something, rather than using return. this way, don't have to remember to call check radius here too
-				CheckRadiusAroundPlayer(); //allow others to move and attack
+				CheckRadiusAroundPlayer(); //allow other enemies to move and attack
 				return; //don't move to space
-			} else {
-				level[(int) boardPiece.MapPosition.x, (int) boardPiece.MapPosition.y] = null;
-				DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, e.ToString() + " died");
-				//FUTURE change so that move player checks a boolean or something, rather than using return. this way, don't have to remember to call check radius here too
-				CheckRadiusAroundPlayer(); //allow others to move and attack
+			} else { //enemy died
+				level[(int) boardPiece.MapPosition.x, (int) boardPiece.MapPosition.y] = null; //clear map space
+				DebugGUI.Log(DebugGUI.Sides.LEFT, e.ToString() + " died");
 			}
 		}
 
@@ -218,8 +222,6 @@ public class GameManagerScript : MonoBehaviour {
 			int diffH = enemyH - h;
 			int diffV = enemyV - v;
 
-			//TODO check if space occupied (by another enemy) before moving to it?
-
 			//Check if adjacent. If so, don't move.
 			if ((diffH == 0 && Mathf.Abs(diffV) == 1) || (diffV == 0 && Mathf.Abs(diffH) == 1)) {
 				continue;
@@ -237,11 +239,14 @@ public class GameManagerScript : MonoBehaviour {
 			} else {
 				//if diffs are same, randomly choose north/south (diffH) or East/West (diffV)
 				int axis = Random.Range(0, 2);
+				//ignore empty if block warning. Work is done in bool check; I want it empty
+				#pragma warning disable 642
 				if (axis == 0) { //arbitrarily chosen to be horizontal
 					if (!EnemyMoveHorizontal(diffH, e)); //try horizontal first. if could not move ...
-					else { EnemyMoveVertical(diffV, e); } // ...try the vertical
+					else EnemyMoveVertical(diffV, e); // ...try the vertical
 				} else if (!EnemyMoveVertical(diffV, e)); //try vertical first. if not ...
 				else EnemyMoveHorizontal(diffH, e); // ... try horizontal
+				#pragma warning restore 642
 			}
 		}
 
@@ -313,9 +318,9 @@ public class GameManagerScript : MonoBehaviour {
 	}
 
 	void PlayerDied() {
-		//TODO end level properly: death screen
-		DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, "You have died!");
-		//NextLevel();
+		//FUTURE death screen
+		DebugGUI.Log(DebugGUI.Sides.LEFT, "You have died!");
+		NextLevel();
 	}
 
 	void QueryPositions() {
@@ -330,6 +335,26 @@ public class GameManagerScript : MonoBehaviour {
 	}
 
 	void NextLevel() {
+		//FIXME reset player stats
 		Application.LoadLevel(0);
+	}
+
+	void PauseGame() {
+		PauseGame(PauseScript.PauseReason.Pause);
+	}
+
+	void PauseGame(PauseScript.PauseReason reason) {
+		paused = true;
+		ps.enabled = true;
+		ps.Reason = reason;
+	}
+
+	public static void UnpauseGame() {
+		ps.enabled = false;
+		paused = false;
+	}
+
+	public static void EndGame() {
+		Application.Quit();
 	}
 }

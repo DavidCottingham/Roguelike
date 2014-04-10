@@ -5,7 +5,7 @@ using System;
 
 public class Player : BoardPieceObject {
 
-	private GameObject player; //loaded in constructor
+	private GameObject playerGO; //loaded in constructor
 	private PlayerScript ps;
 	private List<Item> inventory;
 	private Item weapon;
@@ -15,17 +15,29 @@ public class Player : BoardPieceObject {
 		else return baseDmg; }
 	}
 
+	public static Player player;
+
 	private int health = 30;
 	private int totalArmor = 0;
 	private int baseDmg = 1;
 
-	public Player(Vector2 startPos) {
-		GameObject prefabTemp = Resources.Load<GameObject>("Prefabs/Player");
-		player = (GameObject) GameManagerScript.Instantiate(prefabTemp, startPos * GameManagerScript.translateUnits, Quaternion.identity);
-		ps = player.GetComponent<PlayerScript>();
-		MapPosition = startPos;
+	public Player(int posX, int posY) {
+		Vector2 startPos = new Vector2(posX, posY);
+		if (playerGO == null) {
+			GameObject prefabTemp = Resources.Load<GameObject>("Prefabs/Player");
+			playerGO = (GameObject) GameManagerScript.Instantiate(prefabTemp, startPos * GameManagerScript.translateUnits, Quaternion.identity);
+			ps = playerGO.GetComponent<PlayerScript>();
+			inventory = new List<Item>();
+			MapPosition = startPos;
+		} else {
+			ps = playerGO.GetComponent<PlayerScript>();
+			ps.Health = health;
+			ps.Inventory = inventory;
+			ps.Weapon = weapon;
+			CalcArmor();
+		}
 
-		inventory = new List<Item>();
+		player = this;
 	}
 
 	public override void Move(Directions dir) {
@@ -47,13 +59,12 @@ public class Player : BoardPieceObject {
 	}
 
 	public void PickUpItem(Item item) {
-		//TODO finish pickup item
 		//if upgrade, add to equip, move old to inventory?
-		DebugGUI.AddToMessageLog(DebugGUI.Sides.RIGHT, "You picked up " + item.ToString());
+		DebugGUI.Log(DebugGUI.Sides.RIGHT, "You picked up " + item.ToString());
 		if (item.itemClass == ItemClass.MeleeWeapon) {
 			if (weapon == null || item.mainStat > weapon.mainStat) {
 				weapon = item;
-				DebugGUI.AddToMessageLog(DebugGUI.Sides.RIGHT, "You equipped " + item.ToString());
+				DebugGUI.Log(DebugGUI.Sides.RIGHT, "You equipped " + item.ToString());
 			} else { //weaker weapon
 				inventory.Add(weapon);
 			}
@@ -115,11 +126,16 @@ public class Player : BoardPieceObject {
 			dmg -= totalArmor;
 		} else dmg = 0;
 		health -= dmg;
-		DebugGUI.AddToMessageLog(DebugGUI.Sides.LEFT, enemyName + " has attacked you for " + dmg + " damage");
+		DebugGUI.Log(DebugGUI.Sides.LEFT, enemyName + " has attacked you for " + dmg + " damage");
 		if (health <= 0) {
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	public void SetStartPos(int x, int y) {
+		MapPosition = new Vector2(x, y);
+		ps.SetWorldStartPos(MapPosition * GameManagerScript.translateUnits);
 	}
 }
