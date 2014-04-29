@@ -46,7 +46,7 @@ public class GameManagerScript : MonoBehaviour {
 		for (int i = -1; i <= width; ++i) {
 			pos = new Vector3(i * translateUnits, -1 * translateUnits);
 			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
-			if (wallsParent == null) print("poop");
+			//if (wallsParent == null) print("poop");
 			tempWall.transform.parent = wallsParent.transform;
 			pos = new Vector3(i * translateUnits, height * translateUnits);
 			tempWall = Instantiate(wallPrefab, pos, Quaternion.identity) as GameObject;
@@ -318,9 +318,10 @@ public class GameManagerScript : MonoBehaviour {
 	}
 
 	void PlayerDied() {
-		//FUTURE death screen
 		DebugGUI.Log(DebugGUI.Sides.LEFT, "You have died!");
-		NextLevel();
+		player.Reset();
+		//NextLevel();
+		PauseGame(PauseScript.PauseReason.PlayerDie);
 	}
 
 	void QueryPositions() {
@@ -335,7 +336,6 @@ public class GameManagerScript : MonoBehaviour {
 	}
 
 	void NextLevel() {
-		//FIXME reset player stats
 		Application.LoadLevel(0);
 	}
 
@@ -356,5 +356,9 @@ public class GameManagerScript : MonoBehaviour {
 
 	public static void EndGame() {
 		Application.Quit();
+	}
+
+	public static void RestartLevel() {
+		Application.LoadLevel(0);
 	}
 }

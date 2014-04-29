@@ -25,6 +25,6 @@
   <Task file="" description="Floor" />
   <Task file="" description="Overhaul Game Manager so that persists! and it generates things like level[,] when new level loaded instead of in Start. Move player stats to new script on GM instead of playerScript. Player loads from GM script" priority="Low" />
   <Task file="" description="experience and leveling up" />
-  <Task file="" description="Pause Menu, Exit game" />
-  <Task file="" description="Make BoarGamePiece abstract" priority="Low" />
+  <Task file="" description="Pause Menu, Exit game" completed="True" />
+  <Task file="" description="Make BoardGamePiece abstract" priority="Low" />
 </ListOfTask>

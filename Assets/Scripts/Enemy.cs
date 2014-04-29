@@ -21,8 +21,8 @@ public class Enemy : BoardPieceObject {
 		es = genericEnemyPrefab.GetComponent<EnemyScript>();
 		MapPosition = new Vector2(posX, posY);
 
-		currHealth = es.health;
-		dmg = es.damage;
+		currHealth = es.Health;
+		dmg = es.Damage;
 	}
 
 	/*

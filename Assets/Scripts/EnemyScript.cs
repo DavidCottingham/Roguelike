@@ -3,13 +3,23 @@ using System.Collections;
 
 public class EnemyScript : MonoBehaviour {
 
-	//Any need for EnemyType? Only used as "backup" name, currently ><
-	//public enum EnemyType {Rat, Goblin, Skeleton, Ogre}
+	public enum EnemyType {Melee}
 
-	public int damage;
-	public int health;
+	[SerializeField] private int damage;
+	public int Damage { get { return damage; } }
+	public int minDamage;
+	public int maxDamage;
+	[SerializeField] private int health;
+	public int Health { get { return health; } }
+	public int minHealth;
+	public int maxHealth;
 	//public EnemyType enemyType;
 	public string enemyName;
+
+	void Awake() {
+		damage = Random.Range(minDamage, maxDamage + 1);
+		health = Random.Range(minHealth, maxHealth + 1);
+	}
 
 	public void Die() {
 		Destroy(gameObject);

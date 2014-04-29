@@ -40,7 +40,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemClass: 2
-  mainStat: 4
+  stat: 1
+  minStat: 2
+  maxStat: 4
   itemName: Steel Chest Armor
 --- !u!212 &21200000
 SpriteRenderer:

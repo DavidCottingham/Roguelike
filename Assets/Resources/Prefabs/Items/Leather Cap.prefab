@@ -40,7 +40,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemClass: 1
-  mainStat: 1
+  stat: 1
+  minStat: 1
+  maxStat: 1
   itemName: Leather Cap
 --- !u!212 &21200000
 SpriteRenderer:

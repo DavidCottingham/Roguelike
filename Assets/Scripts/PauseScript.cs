@@ -74,6 +74,13 @@ public class PauseScript : MonoBehaviour {
 				GameManagerScript.UnpauseGame();
 			}
 		}
+
+		if (Reason == PauseReason.PlayerDie) {
+			if (GUI.Button(new Rect(width / 2 - buttonWidth / 2, buttonHeight * 2, buttonWidth, buttonHeight), "Restart")) {
+				GameManagerScript.UnpauseGame();
+				GameManagerScript.RestartLevel();
+			}
+		}
 		
 		if (GUI.Button(new Rect(width / 2 - buttonWidth / 2, buttonHeight * 3 + (buttonSpacing), buttonWidth, buttonHeight), "Exit Game")) {
 			GameManagerScript.EndGame();

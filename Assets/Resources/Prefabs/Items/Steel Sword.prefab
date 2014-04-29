@@ -40,7 +40,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemClass: 0
-  mainStat: 3
+  stat: 1
+  minStat: 3
+  maxStat: 4
   itemName: Steel Sword
 --- !u!212 &21200000
 SpriteRenderer:

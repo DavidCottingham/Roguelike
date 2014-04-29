@@ -138,4 +138,11 @@ public class Player : BoardPieceObject {
 		MapPosition = new Vector2(x, y);
 		ps.SetWorldStartPos(MapPosition * GameManagerScript.translateUnits);
 	}
+
+	public void Reset() {
+		health = 30;
+		inventory = new List<Item>();
+		weapon = null;
+		CalcArmor();
+	}
 }

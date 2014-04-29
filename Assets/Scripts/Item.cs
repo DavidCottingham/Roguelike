@@ -21,7 +21,7 @@ public class Item : BoardPieceObject {
 		MapPosition = new Vector2(posH, posV);
 
 		itemClass = itemScript.itemClass;
-		mainStat = itemScript.mainStat;
+		mainStat = itemScript.MainStat;
 	}
 
 	public void RemoveFromScreen() {

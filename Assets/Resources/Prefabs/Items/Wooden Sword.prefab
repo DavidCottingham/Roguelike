@@ -40,7 +40,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemClass: 0
-  mainStat: 2
+  stat: 1
+  minStat: 2
+  maxStat: 2
   itemName: Wooden Sword
 --- !u!212 &21200000
 SpriteRenderer:
